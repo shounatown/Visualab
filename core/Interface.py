@@ -7,6 +7,7 @@ from .BasicOperationsControls import BasicOperationsControls
 from .ImageOperationsControls import ImageOperationsControls
 from .NoiseControls import NoiseControls
 from .ConnectivityControls import ConnectivityControls
+from .RegionSegmentationControls import RegionSegmentationControls
 
 
 class Interface:
@@ -38,7 +39,8 @@ class Interface:
                         "Operaciones entre imágenes",
                         "Mapas de color",
                         "Ruido",
-                        "Etiquetado de componentes"]
+                        "Etiquetado de componentes",
+                        "Segmentacion de una región de interés"]
 
 
         self.setUpFrames()      #Crea los contenedores principales
@@ -143,5 +145,9 @@ class Interface:
             #Generamos los botones
             ConnectivityControls(self.controls, self.tabView, self.openedImages,self.createdTabs)
 
+        #Sección "Segmentación de una región"
+        if seleccion=="Segmentación de una región":
+            #Generamos los botones
+            RegionSegmentation(self.controls, self.tabView, self.openedImages,self.createdTabs)
 
 
