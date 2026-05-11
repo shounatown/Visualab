@@ -11,6 +11,12 @@ from pdi.BasicOperations import BasicOperations
 from pdi.ImageOperations import ImageOperations
 from pdi.Connectivity import Connectivity
 from pdi.Noise import Noise
+from pdi.ColorModels import ColorModels
+from pdi.Ecualization import Ecualization
+from pdi.Umbralize import Umbralize
+from pdi.PasoBajasAltas import PasoBajasAltas
+from pdi.MathematicalMorphology import MathematicalMorphology
+from pdi.Segmentation import Segmentation
 from PIL import Image
 import cv2
 import numpy as np
@@ -24,6 +30,7 @@ class ButtonsFunctionalities:
         self.tabView = tabView              #Pestañas abiertas
         self.openedImages = openedImages    #Diccionario de las imágenes PIL
         self.createdTabs = createdTabs      #Set con las imágenes creadas
+        self.combos = {}                    #Combo box de imagenes
 
         self.cm = ColorMap()
         self.histogram = Histogram()
@@ -32,6 +39,12 @@ class ButtonsFunctionalities:
         self.io = ImageOperations()
         self.conn = Connectivity()
         self.noise = Noise()
+        self.colorModels = ColorModels()
+        self.ec = Ecualization()
+        self.u = Umbralize()
+        self.pba = PasoBajasAltas()
+        self.mm = MathematicalMorphology()
+        self.seg = Segmentation()
 
 
     ##################Botones para el manejo de archivos##################
@@ -67,8 +80,9 @@ class ButtonsFunctionalities:
             #Registrar que se creó
             self.openedImages[name] = imageCV
             self.createdTabs.add(name)
-
             self.tabView.set(name)
+            self.updateComboBoxImages()
+
 
 
     def saveImage(self):
@@ -105,6 +119,7 @@ class ButtonsFunctionalities:
             #Cerrar la pestaña
             self.openedImages.pop(currentTab, None)
             self.createdTabs.discard(currentTab)
+            self.updateComboBoxImages()
 
             self.tabView.set("Inicio")
 
@@ -202,6 +217,7 @@ class ButtonsFunctionalities:
         self.openedImages[newName] = result
         self.createdTabs.add(newName)
         self.tabView.set(newName)
+        self.updateComboBoxImages()
 
     ##################Funciones extra##################
 
@@ -385,7 +401,7 @@ class ButtonsFunctionalities:
     
 
 #PARA HACER UN COMBO BOX DE LAS IMAGENES CARGADAS
-    def createComboBoxImages(self, place, text, values):
+    def createComboBoxImages(self, key, place, text, values):
         #Esta función crea un combo box
         frame=ctk.CTkFrame(place, fg_color="transparent")
         frame.pack(fill="x", padx=15, pady=5)
@@ -393,29 +409,60 @@ class ButtonsFunctionalities:
         ctk.CTkLabel(frame, text=text, font=("Arial", 12, "bold")).pack(side="top", anchor="w")
 
         #Creamos el combo bvox
-        self.combo = ctk.CTkComboBox(frame, values=values, width=200,text_color="white",fg_color="#230b67", border_color="#230b67",button_color="#FFA600", button_hover_color="#CC8500")
-        self.combo.pack(fill="x", pady=5)
+        combo = ctk.CTkComboBox(frame, values=values, width=200,text_color="white",fg_color="#230b67", border_color="#230b67",button_color="#FFA600", button_hover_color="#CC8500")
+        combo.pack(fill="x", pady=5)
 
-        #Cuando el usuario haga clic para abrirlo,  lo actualizamos
-        self.combo.bind("<Button-1>", lambda event: self.updateComboBoxImages())
-
-        return self.combo
+        self.combos[key] = combo
+        return combo
 
     def updateComboBoxImages(self):
-        #Función para actualizar la lista del combo
-        if self.openedImages:
-            #Sacamos los nombres actualizados de las imágenes abiertas
-            nombres_actualizados = list(self.openedImages.keys())
-            self.comboImgB.configure(values=nombres_actualizados)
-        else:
-            self.comboImgB.configure(values=["No hay imágenes cargadas"])
+        #FUnción para actualizar los combo box de imagenes
+        nombres = list(self.openedImages.keys())
+
+        if not nombres:
+            nombres = ["No hay imágenes cargadas"]
+
+        for combo in self.combos.values():
+            current = combo.get()
+
+            combo.configure(values=nombres)
+
+            if current in nombres:
+                combo.set(current)
+            else:
+                combo.set(nombres[0])
+
+    def validateComboImage(self, comboImages, imageType="imagen"):
+
+        #Obtener nombre del combo
+        name = str(comboImages.get()).strip()
+
+        #Validar selección
+        if name=="No hay imágenes cargadas" or not name:
+            messagebox.showwarning("Atención","Selecciona una "+str(imageType)+" válida en el menú desplegable")
+            return None
+
+        #Validar existencia en diccionario
+        if name not in self.openedImages:
+            messagebox.showerror("Error","La "+str(imageType)+" "+str(name)+" no se encuentra registrada")
+            return None
+
+        #Obtener imagen
+        image = self.openedImages[name]
+
+        # Validar imagen
+        if image is None:
+            messagebox.showwarning("Atención","La "+str(imageType)+" "+str(name)+" no se pudo cargar correctamente")
+            return None
+
+        return image
     
 #PANEL DE BOTONES
 
-    def createGridButton(self, place, icon, command, row, col):
+    def createGridButton(self, place, icon, command, row, col, fg="#FFA600", hover="#CC8500"):
         #Función que crea botones cuadrados en una cuadrícula
         icon=self.loadIcon(icon, 35, 35)
-        button=ctk.CTkButton(place, image=icon, text="",width=60, height=60,corner_radius=8, fg_color="#FFA600",hover_color="#CC8500", command=command)
+        button=ctk.CTkButton(place, image=icon, text="",width=60, height=60,corner_radius=8, fg_color=fg,hover_color=hover, command=command)
         button.grid(row=row, column=col, padx=10, pady=10)
         button.image = icon
         return button

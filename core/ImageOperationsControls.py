@@ -30,7 +30,7 @@ class ImageOperationsControls(ButtonsFunctionalities):
         else:
             currentImage = "Ninguna"
         ctk.CTkLabel(self.comboPanel, text="Imagen 1: "+str(currentImage), font=("Roboto", 12, "bold")).pack(pady=(15, 0))
-        self.combo=self.createComboBoxImages(self.comboPanel, "Selecciona la imagen 2:", images)
+        self.comboImages=self.createComboBoxImages("images", self.comboPanel, "Selecciona la imagen 2:", images)
 
         ####Botones de operaciones aritmetricas
         ctk.CTkLabel(self.scrollFrame, text="Operaciones aritméticas",font=("Roboto", 12, "bold")).pack(pady=(15, 0))
@@ -65,36 +65,26 @@ class ImageOperationsControls(ButtonsFunctionalities):
         #Función para aplicar la operación entre dos imágenes
         #Obtener Imagen A
         imageA, nameA = self.getImage()
-
-        #Obtener Imagen B del combo box
-        nameB=str(self.combo.get()).strip()
-
-        #Validación
-        if nameB=="No hay imágenes cargadas" or not nameB:
-            messagebox.showwarning("Atención", "Selecciona una imagen válida en el menú desplegable")
+        if imageA is None:
             return
 
-        try:
-            #Verificamos si existe la imagen B en el diccionario de imágenes cargadas
-            if nameB not in self.openedImages:
-                messagebox.showerror("Error", "La imagen '"+str(nameB)+"' no se encuentra registrada")
-                return
-            #obtenemos la imagen
-            imageB = self.openedImages[nameB]
-        except Exception as e:
-            messagebox.showerror("Error", "Error al acceder a la imagen B: "+str(e))
+        #Obtener Imagen B
+        imageB = self.validateComboImage(self.comboImages, "imagen B")
+        if imageB is None:
             return
 
-        #Validamos que las dos existan
-        if imageA is None or imageB is None:
-            messagebox.showwarning("Atención", "Una de las imágenes no se pudo cargar correctamente")
-            return
+        #Obtener nombre de imagen B
+        nameB = str(self.comboImages.get()).strip()
 
-        #Hacemos que ambas imágens sean compatibles en tamaño y número de canales si asi lo quiere el usuario
+        #Compatibilidad de canales
         newImageA, newImageB = self.io.matchChannels(imageA, imageB)
+
         if newImageA is None:
             return
+
+        #Compatibilidad de tamaño
         newImageA, newImageB = self.io.matchSize(newImageA, newImageB)
+
         if newImageA is None:
             return
 

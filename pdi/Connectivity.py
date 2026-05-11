@@ -82,4 +82,21 @@ class Connectivity:
                 cv2.putText(colorImage, str(i+1), (x, y-10),cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
             return colorImage, len(contours)
+    
+    def getContoursWithMask(self,image, mascaraFinal, k=5):
+        #Dibujar contornos
+        contours, _ = cv2.findContours(mascaraFinal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        imageContornos=image.copy()
+
+        #Se dibujan los contornos
+        for i, contour in enumerate(contours):
+            contour[:, :, 1]+=k
+            cv2.drawContours(imageContornos, [contour], -1, (0, 255, 0), 15)
+            x, y, w, h = cv2.boundingRect(contour)
+
+            #Se númeroan las flores
+            cv2.putText(imageContornos,f'{i + 1}',(x, y + h),
+                cv2.FONT_HERSHEY_SIMPLEX,2, (0, 0, 255),7)
+
+        return imageContornos
 

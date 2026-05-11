@@ -40,7 +40,7 @@ class Interface:
                         "Mapas de color",
                         "Ruido",
                         "Etiquetado de componentes",
-                        "Segmentacion de una región de interés"]
+                        "Segmentación de una región"]
 
 
         self.setUpFrames()      #Crea los contenedores principales
@@ -148,6 +148,6 @@ class Interface:
         #Sección "Segmentación de una región"
         if seleccion=="Segmentación de una región":
             #Generamos los botones
-            RegionSegmentation(self.controls, self.tabView, self.openedImages,self.createdTabs)
+            RegionSegmentationControls(self.controls, self.tabView, self.openedImages,self.createdTabs)
 
 
